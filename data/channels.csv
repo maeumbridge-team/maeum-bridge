@@ -1,0 +1,6 @@
+channel_id,org,mode,counselors,sessions_per_counselor_per_day,waiting_now,urgent_slots_per_day,urgent_waiting,location
+campus_f2f,교내 학생상담센터(예시),대면,4,5,150,2,1,학생회관 3층
+campus_chat,교내 학생상담센터(예시),채팅,2,6,9,1,0,앱 내 채팅
+campus_video,교내 학생상담센터(예시),화상,2,5,14,1,0,앱 내 화상
+community_f2f,지역 정신건강복지센터(예시),대면,3,4,20,2,0,구청 별관 2층
+community_phone,지역 정신건강복지센터(예시),전화,2,8,6,2,0,전화 연결

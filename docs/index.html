@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>마음다리 익명 자가검진</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* 조용한 청록 잉크 + 차분한 회녹색 바탕. 한 줄 세로 흐름, 단계별 카드 */
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --ink: #17262b;
+  --muted: #56686e;
+  --line: #d8e0de;
+  --accent: #2b6a6e;
+  --accent-soft: #e3efee;
+  --on-accent: #ffffff;
+  --ok: #2c7a4b;   --ok-soft: #e6f3ea;
+  --warn: #9a6200; --warn-soft: #fbf0dc;
+  --crit: #b0302a; --crit-soft: #fbe7e5;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-display: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --radius: 12px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1719; --surface: #172326; --ink: #e5eeec; --muted: #9db0b2; --line: #2a3b3e;
+    --accent: #72b6b6; --accent-soft: #1d3436; --on-accent: #0f1719;
+    --ok: #7fcf9c; --ok-soft: #173225; --warn: #e8b45a; --warn-soft: #33281a; --crit: #f08a83; --crit-soft: #3a1d1b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1719; --surface: #172326; --ink: #e5eeec; --muted: #9db0b2; --line: #2a3b3e;
+  --accent: #72b6b6; --accent-soft: #1d3436; --on-accent: #0f1719;
+  --ok: #7fcf9c; --ok-soft: #173225; --warn: #e8b45a; --warn-soft: #33281a; --crit: #f08a83; --crit-soft: #3a1d1b;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; word-break: keep-all; overflow-wrap: anywhere; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.3; margin: 0; text-wrap: balance; }
+h1 { font-size: 1.75rem; font-weight: 700; }
+h2 { font-size: 1.25rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+.topbar { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.topbar-inner { max-width: 720px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: baseline; gap: 8px; font-weight: 700; font-size: 1.1rem; }
+.chip { font-size: .75rem; font-weight: 500; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.help-btn { background: var(--crit-soft); color: var(--crit); border: 1px solid transparent; border-radius: 999px; padding: 6px 12px; font-weight: 600; font-size: .9rem; cursor: pointer; white-space: nowrap; }
+.crisis-panel { max-width: 720px; margin: 0 auto; padding: 0 16px 12px; }
+.contacts { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.contact { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--surface); }
+.contact strong { display: block; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.contact span { color: var(--muted); font-size: .85rem; }
+
+main { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; display: grid; gap: 14px; }
+.lede { color: var(--muted); }
+ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.note { font-size: .875rem; color: var(--muted); }
+.disclaimer { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: .9rem; }
+.check { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin-top: 3px; accent-color: var(--accent); flex: none; }
+
+.btn { border-radius: 10px; padding: 12px 18px; font-weight: 600; cursor: pointer; border: 1px solid var(--line); background: var(--surface); }
+.btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.small { padding: 6px 12px; font-size: .875rem; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.progress { position: sticky; top: 52px; z-index: 4; background: var(--bg); padding: 8px 0; display: grid; gap: 6px; }
+.bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .2s; }
+.progress-text { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+fieldset.q { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin: 0; display: grid; gap: 10px; }
+fieldset.q.missing { border-color: var(--crit); background: var(--crit-soft); }
+fieldset.q legend { padding: 0; font-weight: 500; float: left; width: 100%; }
+fieldset.q legend b { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 4px; }
+.opts { clear: both; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+@media (max-width: 560px) { .opts { grid-template-columns: 1fr 1fr; } }
+.opt { position: relative; }
+.opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.opt span { display: block; height: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px 6px; text-align: center; font-size: .85rem; line-height: 1.35; background: var(--surface); }
+.opt input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.opt input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+.demo { border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; }
+
+.alert { border-radius: 10px; padding: 14px 16px; border-left: 5px solid; }
+.alert.crit { background: var(--crit-soft); border-color: var(--crit); color: var(--ink); }
+.level { display: grid; gap: 4px; border-radius: var(--radius); padding: 16px 18px; border-left: 6px solid; }
+.level[data-l="1"] { background: var(--ok-soft); border-color: var(--ok); }
+.level[data-l="2"] { background: var(--warn-soft); border-color: var(--warn); }
+.level[data-l="3"] { background: var(--crit-soft); border-color: var(--crit); }
+.level .tag { font-weight: 700; font-size: 1.1rem; }
+.level[data-l="1"] .tag { color: var(--ok); }
+.level[data-l="2"] .tag { color: var(--warn); }
+.level[data-l="3"] .tag { color: var(--crit); }
+.scores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 420px) { .scores { grid-template-columns: 1fr; } }
+.score { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 6px; }
+.score .num { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.score .num small { font-size: .9rem; color: var(--muted); font-weight: 500; }
+.scale { position: relative; height: 8px; border-radius: 99px; background: linear-gradient(to right, var(--ok) 0 var(--a), var(--warn) var(--a) var(--b), var(--crit) var(--b) 100%); opacity: .35; }
+.scale-wrap { position: relative; }
+.scale-mark { position: absolute; top: -4px; width: 4px; height: 16px; border-radius: 2px; background: var(--ink); transform: translateX(-2px); }
+details { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+details summary { cursor: pointer; font-weight: 500; }
+details[open] summary { margin-bottom: 8px; }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 520px; }
+th, td { white-space: nowrap; text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: .8rem; background: var(--accent-soft); }
+tr:last-child td { border-bottom: 0; }
+td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+tr.dim td { color: var(--muted); }
+.pill { display: inline-block; font-size: .75rem; font-weight: 600; border-radius: 99px; padding: 1px 8px; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.no { background: var(--warn-soft); color: var(--warn); }
+.pill.urgent { background: var(--crit-soft); color: var(--crit); }
+.toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+.toggle { border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; cursor: pointer; background: var(--surface); font-size: .9rem; }
+.toggle[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+label.field { display: grid; gap: 4px; font-size: .9rem; font-weight: 500; }
+select { border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; background: var(--surface); max-width: 100%; }
+input[type="text"] { border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; background: var(--surface); width: 100%; text-transform: uppercase; }
+.form-grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+@media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+.code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.5rem; font-weight: 700; letter-spacing: .06em; background: var(--accent-soft); border-radius: 10px; padding: 12px 16px; text-align: center; }
+.msg { font-size: .9rem; }
+.msg.err { color: var(--crit); }
+.msg.ok { color: var(--ok); }
+footer { max-width: 720px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: .8rem; display: grid; gap: 6px; }
+[hidden] { display: none !important; }
+main > *, .card > *, .form-grid > *, .field > * { min-width: 0; }
+select { width: 100%; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">마음다리 <span class="chip">교육용 프로토타입</span></div>
+    <button class="help-btn" id="help-btn" aria-expanded="false" aria-controls="crisis-panel">지금 힘들다면 · 109</button>
+  </div>
+  <div class="crisis-panel" id="crisis-panel" hidden>
+    <div class="contacts" id="contacts-top"></div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer>
+  <p>PHQ-9·GAD-7: Kroenke 2001, Spitzer 2006 (Pfizer, 복제·번역·배포에 별도 허가 불필요). 위기 연락처: 보건복지부 109, 정신건강위기상담전화 1577-0199.</p>
+  <p>상담 기관과 대기 인원은 시연용 가상 데이터입니다. 응답은 서버로 보내지 않으며, 예약 코드는 이 브라우저에만 저장됩니다.</p>
+</footer>
+
+<script src="core.js"></script>
+<script>
+"use strict";
+const MB = window.MB;
+const $ = (sel, el = document) => el.querySelector(sel);
+const app = $("#app");
+const state = { step: "intro", answers: { phq: Array(9).fill(null), gad: Array(7).fill(null) }, result: null,
+  pref: MB.MODES.slice(), tol: 7, bookingOpen: false, booking: null };
+
+/* 예약 저장소: 이 브라우저에만 저장(localStorage), 막혀 있으면 메모리로 대체 */
+const memStore = {};
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem("mb_bookings") || "{}"); } catch (e) { return memStore; } },
+  set(v) { try { localStorage.setItem("mb_bookings", JSON.stringify(v)); } catch (e) { Object.assign(memStore, v); } },
+};
+const todayLocal = () => { const n = new Date(); return MB.ymd(n.getFullYear(), n.getMonth() + 1, n.getDate()); };
+const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
+const fmtDate = (d) => `${d.getUTCMonth() + 1}/${d.getUTCDate()}(${WEEK[d.getUTCDay()]})`;
+const fmtSlot = (k) => { const d = new Date(k.slice(0, 10) + "T00:00:00Z"); return `${fmtDate(d)} ${k.slice(11)}`; };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function contactsHTML() {
+  return MB.CRISIS_CONTACTS.map((c) => `<div class="contact"><a href="tel:${c.tel}" style="color:inherit;text-decoration:none"><strong>${esc(c.number)}</strong></a>${esc(c.name)}<br><span>${esc(c.note)}</span></div>`).join("");
+}
+$("#contacts-top").innerHTML = contactsHTML();
+$("#help-btn").addEventListener("click", (e) => {
+  const p = $("#crisis-panel"); p.hidden = !p.hidden; e.currentTarget.setAttribute("aria-expanded", String(!p.hidden));
+});
+
+function lookupCard() {
+  return `<details class="card" id="lookup"><summary>내 예약 확인·취소</summary>
+    <div style="display:grid;gap:8px">
+      <label class="field" for="lookup-code">익명 예약 코드<input type="text" id="lookup-code" placeholder="MB-XXXX-XXXX" autocomplete="off"></label>
+      <div class="row"><button class="btn small" id="lookup-btn">조회</button><button class="btn small" id="cancel-btn">예약 취소</button></div>
+      <p class="msg" id="lookup-msg" role="status"></p>
+    </div></details>`;
+}
+function bindLookup() {
+  const code = () => $("#lookup-code").value.trim().toUpperCase();
+  const msg = (t, cls) => { const m = $("#lookup-msg"); m.textContent = t; m.className = "msg " + cls; };
+  $("#lookup-btn").onclick = () => {
+    const b = store.get()[code()];
+    if (!code()) return msg("코드를 입력해 주세요.", "err");
+    b ? msg(`${b.label} · ${fmtSlot(b.slot)}`, "ok") : msg("이 브라우저에 저장된 예약이 없습니다. 코드를 다시 확인해 주세요.", "err");
+  };
+  $("#cancel-btn").onclick = () => {
+    const all = store.get();
+    if (!all[code()]) return msg("취소할 예약이 없습니다.", "err");
+    delete all[code()]; store.set(all); msg("예약을 취소했습니다.", "ok");
+  };
+}
+
+/* ---------- 1. 안내·동의 ---------- */
+function renderIntro() {
+  app.innerHTML = `
+  <section class="card">
+    <h1>3분 익명 자가검진에서 상담 예약까지</h1>
+    <p class="lede">우울(PHQ-9) 9문항과 불안(GAD-7) 7문항에 답하면, 결과와 지금 할 수 있는 일을 바로 알려 드려요.</p>
+    <ul class="plain">
+      <li><b>이름·학번·연락처를 묻지 않습니다.</b> 응답은 이 화면 안에서만 계산하고 어디에도 보내지 않아요.</li>
+      <li>결과는 3단계(자가관리 · 상담 권고 · 우선 연계)로 안내합니다.</li>
+      <li>상담 대기 현황을 보고, 무작위 익명 코드로 예약할 수 있어요.</li>
+    </ul>
+    <p class="disclaimer">${esc(MB.DISCLAIMER)}</p>
+    <label class="check" for="agree"><input type="checkbox" id="agree"><span>위 내용을 이해했고, 이 결과가 진단이 아니라는 점에 동의합니다.</span></label>
+    <div><button class="btn primary" id="start" disabled>검진 시작</button></div>
+  </section>
+  ${lookupCard()}`;
+  $("#agree").onchange = (e) => { $("#start").disabled = !e.target.checked; };
+  $("#start").onclick = () => go("screen");
+  bindLookup();
+}
+
+/* ---------- 2. 검진 ---------- */
+const EXAMPLES = {
+  S1: { label: "S1 · 시험기간 스트레스", phq: [1,1,1,1,0,1,1,0,0], gad: [1,1,2,1,0,1,0] },
+  S2: { label: "S2 · 한 달째 무기력", phq: [2,2,1,2,1,2,1,1,0], gad: [2,1,2,1,1,1,1] },
+  S3: { label: "S3 · 9번 문항 응답", phq: [1,2,1,1,1,1,1,0,1], gad: [1,1,1,1,0,1,1] },
+};
+function qHTML(scale, i, text) {
+  const name = `${scale}${i}`;
+  const opts = MB.RESPONSE_OPTIONS.map((o, v) => `<label class="opt"><input type="radio" name="${name}" id="${name}_${v}" value="${v}" ${state.answers[scale][i] === v ? "checked" : ""}><span>${esc(o)}</span></label>`).join("");
+  return `<fieldset class="q" id="fs-${name}"><legend><b>${i + 1}.</b>${esc(text)}</legend><div class="opts">${opts}</div></fieldset>`;
+}
+function renderScreen() {
+  app.innerHTML = `
+  <div class="progress" aria-live="polite"><div class="bar"><i id="bar"></i></div><span class="progress-text" id="ptext"></span></div>
+  <section class="card">
+    <h2>1. 우울 (PHQ-9)</h2><p class="note">${esc(MB.STEM)}</p>
+    ${MB.PHQ9_ITEMS.map((t, i) => qHTML("phq", i, t)).join("")}
+  </section>
+  <section class="card">
+    <h2>2. 불안 (GAD-7)</h2><p class="note">${esc(MB.STEM)}</p>
+    ${MB.GAD7_ITEMS.map((t, i) => qHTML("gad", i, t)).join("")}
+  </section>
+  <div class="demo"><p class="note" style="margin-bottom:6px">시연용 예시 응답 채우기 (발표·심사용)</p>
+    <div class="row">${Object.entries(EXAMPLES).map(([k, e]) => `<button class="btn small" data-ex="${k}">${esc(e.label)}</button>`).join("")}</div></div>
+  <p class="msg err" id="missing" role="alert"></p>
+  <div class="row"><button class="btn primary" id="submit">결과 보기</button><button class="btn" id="back">처음으로</button></div>`;
+  app.addEventListener("change", onAnswer);
+  app.querySelectorAll("[data-ex]").forEach((b) => b.onclick = () => {
+    const e = EXAMPLES[b.dataset.ex]; state.answers.phq = e.phq.slice(); state.answers.gad = e.gad.slice(); renderScreen(); updateProgress();
+  });
+  $("#submit").onclick = submit;
+  $("#back").onclick = () => { reset(); go("intro"); };
+  updateProgress();
+}
+function onAnswer(e) {
+  const m = /^(phq|gad)(\d)$/.exec(e.target.name || "");
+  if (!m) return;
+  state.answers[m[1]][+m[2]] = +e.target.value;
+  $(`#fs-${e.target.name}`).classList.remove("missing");
+  updateProgress();
+}
+function updateProgress() {
+  const done = [...state.answers.phq, ...state.answers.gad].filter((v) => v !== null).length;
+  $("#bar").style.width = `${(done / 16) * 100}%`;
+  $("#ptext").textContent = `응답 ${done} / 16`;
+}
+function submit() {
+  const missing = [];
+  state.answers.phq.forEach((v, i) => v === null && missing.push(["phq", i, `PHQ-9 ${i + 1}`]));
+  state.answers.gad.forEach((v, i) => v === null && missing.push(["gad", i, `GAD-7 ${i + 1}`]));
+  if (missing.length) {
+    missing.forEach(([s, i]) => $(`#fs-${s}${i}`).classList.add("missing"));
+    $("#missing").textContent = "아직 답하지 않은 문항이 있어요: " + missing.map((m) => m[2]).join(", ");
+    $(`#fs-${missing[0][0]}${missing[0][1]}`).scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  state.result = MB.classify(state.answers.phq, state.answers.gad);
+  // 응답 원본은 결과 계산 후 지운다
+  state.answers = { phq: Array(9).fill(null), gad: Array(7).fill(null) };
+  app.removeEventListener("change", onAnswer);
+  go("result");
+}
+
+/* ---------- 3. 결과·대기·예약 ---------- */
+function scoreTile(name, sev, val, max) {
+  return `<div class="score"><span class="note">${name} · ${esc(sev)}</span>
+    <span class="num">${val} <small>/ ${max}</small></span>
+    <div class="scale-wrap"><div class="scale" style="--a:${(10 / max) * 100}%;--b:${(15 / max) * 100}%" title="10점·15점 기준선"></div><i class="scale-mark" style="left:${(val / max) * 100}%"></i></div></div>`;
+}
+function renderResult() {
+  const r = state.result, g = MB.guidanceFor(r);
+  const priority = r.level === 3;
+  app.innerHTML = `
+  ${g.show_crisis_banner ? `<div class="alert crit" role="alert"><p>죽음이나 자해에 대한 생각이 든다고 답해 주셨어요. 말해 주어서 고마워요. 혼자 견디지 않아도 됩니다.
+    지금 바로 <b>109(자살예방상담전화, 24시간)</b>에 전화하거나, 당장 위험하다면 <b>119</b>에 연락하세요.</p></div>` : ""}
+  <section class="card">
+    <div class="level" data-l="${r.level}"><span class="tag">${esc(r.label)}</span><span>${esc(g.headline)}</span></div>
+    <div class="scores">${scoreTile("우울 PHQ-9", r.phq9_severity, r.phq9_total, 27)}${scoreTile("불안 GAD-7", r.gad7_severity, r.gad7_total, 21)}</div>
+    <details><summary>이렇게 판단한 이유</summary><ul class="plain">${r.reasons.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+      <p class="note" style="margin-top:8px">기준: PHQ-9·GAD-7 각 10점 이상 → 상담 권고, 15점 이상 또는 PHQ-9 9번 문항 응답 → 우선 연계</p></details>
+    <h3>지금 해 볼 수 있는 것</h3>
+    <ul class="plain">${g.actions.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>
+    <p class="note">${g.recheck_days}일 뒤 다시 검진해 변화를 확인해 보세요.</p>
+    ${g.show_contacts ? `<details ${r.safety_flag ? "open" : ""}><summary>24시간 상담 연락처</summary><div class="contacts">${contactsHTML()}</div></details>` : ""}
+    <p class="disclaimer">${esc(MB.DISCLAIMER)}</p>
+  </section>
+
+  <section class="card">
+    <h2>상담 대기 현황</h2>
+    <p class="note">시연용 가상 데이터입니다. 실제 기관의 대기 인원이 아닙니다.${priority ? " 3단계는 기관별 긴급 슬롯(우선 트랙)으로 계산했어요." : ""}</p>
+    <div class="form-grid">
+      <div class="field"><span>선호하는 상담 방식</span><div class="toggles" id="modes">${MB.MODES.map((m) => `<button class="toggle" data-mode="${m}" aria-pressed="${state.pref.includes(m)}">${m}</button>`).join("")}</div></div>
+      <label class="field" for="tol">기다릴 수 있는 기간<select id="tol">${[3, 7, 14, 30].map((d) => `<option value="${d}" ${state.tol === d ? "selected" : ""}>${d}일 이내</option>`).join("")}</select></label>
+    </div>
+    <div id="waits"></div>
+  </section>
+
+  <section class="card" id="book-card"></section>
+  ${lookupCard()}
+  <div><button class="btn" id="restart">처음부터 다시</button></div>`;
+
+  $("#modes").onclick = (e) => {
+    const b = e.target.closest("[data-mode]"); if (!b) return;
+    const m = b.dataset.mode;
+    state.pref = state.pref.includes(m) ? state.pref.filter((x) => x !== m) : [...state.pref, m];
+    b.setAttribute("aria-pressed", String(state.pref.includes(m)));
+    drawWaits();
+  };
+  $("#tol").onchange = (e) => { state.tol = +e.target.value; drawWaits(); };
+  $("#restart").onclick = () => { reset(); go("intro"); };
+  state.bookingOpen = g.suggest_booking;
+  bindLookup();
+  drawWaits();
+}
+function currentTable() {
+  return MB.rankChannels(state.result.level === 3, todayLocal(), state.pref.length ? state.pref : null, state.tol);
+}
+function drawWaits() {
+  const t = currentTable();
+  const rows = t.map((w) => `<tr class="${w.preferred ? "" : "dim"}"><td style="white-space:normal;min-width:150px">${esc(w.org)}<br><span class="note">${esc(w.location)}</span></td><td>${esc(w.mode)}</td>
+    <td class="num">${w.waiting_ahead}명</td><td class="num">${w.wait_business_days}영업일</td><td class="num">${fmtDate(w.first_date)}</td>
+    <td>${w.within ? '<span class="pill ok">희망 기간 내</span>' : '<span class="pill no">기간 초과</span>'}${w.used_urgent_track ? ' <span class="pill urgent">우선 트랙</span>' : ""}</td></tr>`).join("");
+  const anyWithin = t.some((w) => w.within);
+  $("#waits").innerHTML = `<div class="table-wrap"><table><thead><tr><th>기관</th><th>방식</th><th>앞 대기</th><th>예상 대기</th><th>첫 상담 가능일</th><th>상태</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${anyWithin ? "" : '<p class="msg err" style="margin-top:8px">희망 기간 안에 가능한 곳이 없어요. 기다리는 동안 1577-0199(24시간)를 이용할 수 있어요.</p>'}`;
+  drawBooking(t);
+}
+function drawBooking(t) {
+  const card = $("#book-card");
+  if (!state.bookingOpen) {
+    card.innerHTML = `<h2>익명 예약</h2><p class="note">지금은 예약이 꼭 필요하지 않은 단계예요. 그래도 상담을 받고 싶다면 예약할 수 있어요.</p>
+      <div><button class="btn" id="open-book">상담 예약하기</button></div>`;
+    $("#open-book").onclick = () => { state.bookingOpen = true; drawBooking(currentTable()); };
+    return;
+  }
+  const opts = state.pref.length ? t.filter((w) => w.preferred) : t;
+  if (!opts.length) { card.innerHTML = `<h2>익명 예약</h2><p class="note">선호하는 상담 방식을 하나 이상 골라 주세요.</p>`; return; }
+  const prev = $("#ch") ? $("#ch").value : null;
+  const chId = opts.some((w) => w.channel_id === prev) ? prev : opts[0].channel_id;
+  const w = opts.find((x) => x.channel_id === chId);
+  const taken = new Set(Object.values(store.get()).filter((b) => b.channel_id === chId).map((b) => b.slot));
+  const slots = MB.slotsFor(w.first_date, 5, taken);
+  card.innerHTML = `<h2>익명 예약</h2>
+    <div class="form-grid">
+      <label class="field" for="ch">상담 채널<select id="ch">${opts.map((o) => `<option value="${o.channel_id}" ${o.channel_id === chId ? "selected" : ""}>${esc(o.org)} · ${o.mode} (첫 가능일 ${fmtDate(o.first_date)})</option>`).join("")}</select></label>
+      <label class="field" for="slot">시간<select id="slot">${slots.map((s) => `<option value="${s}">${fmtSlot(s)}</option>`).join("")}</select></label>
+    </div>
+    <p class="note">이름·연락처 없이 무작위 코드만 발급돼요.</p>
+    <div><button class="btn primary" id="book">이 시간으로 예약</button></div>`;
+  $("#ch").onchange = () => drawBooking(currentTable());
+  $("#book").onclick = () => {
+    const all = store.get(), slot = $("#slot").value;
+    if (Object.values(all).some((b) => b.channel_id === chId && b.slot === slot)) { drawBooking(currentTable()); return; }
+    let code; do { code = MB.newCode((k) => crypto.getRandomValues(new Uint32Array(1))[0] % k); } while (all[code]);
+    const label = `${w.org} · ${w.mode}`;
+    all[code] = { channel_id: chId, slot, priority: state.result.level === 3, label };  // 검진 점수·응답은 저장하지 않음
+    store.set(all);
+    state.booking = { code, label, slot };
+    go("done");
+  };
+}
+
+/* ---------- 4. 예약 완료 ---------- */
+function renderDone() {
+  const b = state.booking;
+  app.innerHTML = `<section class="card">
+    <h2>예약되었습니다</h2>
+    <p><b>${esc(b.label)}</b><br>${fmtSlot(b.slot)}</p>
+    <div class="code" id="code">${esc(b.code)}</div>
+    <div class="row"><button class="btn small" id="copy">코드 복사</button><span class="msg" id="copy-msg" role="status"></span></div>
+    <p class="note">이 코드는 다시 보여 드릴 수 없어요. 캡처하거나 메모해 두세요. 조회·취소는 아래에서 할 수 있어요. (시연용: 예약은 이 브라우저에만 저장됩니다)</p>
+    <div><button class="btn primary" id="home">처음으로</button></div>
+  </section>${lookupCard()}`;
+  $("#copy").onclick = async () => {
+    try { await navigator.clipboard.writeText(b.code); $("#copy-msg").textContent = "복사했어요."; }
+    catch (e) { $("#copy-msg").textContent = "복사가 막혀 있어요. 코드를 직접 메모해 주세요."; }
+  };
+  $("#home").onclick = () => { reset(); go("intro"); };
+  bindLookup();
+}
+
+function reset() { state.result = null; state.booking = null; state.answers = { phq: Array(9).fill(null), gad: Array(7).fill(null) }; }
+function go(step) {
+  state.step = step;
+  ({ intro: renderIntro, screen: renderScreen, result: renderResult, done: renderDone })[step]();
+  window.scrollTo(0, 0);
+}
+go("intro");
+</script>
+</body>
+</html>

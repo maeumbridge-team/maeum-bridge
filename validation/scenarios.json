@@ -1,0 +1,32 @@
+[
+  {
+    "id": "S1",
+    "persona": "시험기간 스트레스가 있지만 일상은 유지하는 2학년 A",
+    "phq9": [1, 1, 1, 1, 0, 1, 1, 0, 0],
+    "gad7": [1, 1, 2, 1, 0, 1, 0],
+    "preferred_modes": ["채팅", "화상"],
+    "expected_level": 1,
+    "expected_flag": false,
+    "expected_behavior": "자가관리 안내, 2주 후 재검진, 예약은 선택"
+  },
+  {
+    "id": "S2",
+    "persona": "대인관계 갈등으로 한 달째 무기력한 3학년 B (상담센터 이용 경험 없음)",
+    "phq9": [2, 2, 1, 2, 1, 2, 1, 1, 0],
+    "gad7": [2, 1, 2, 1, 1, 1, 1],
+    "preferred_modes": ["채팅"],
+    "expected_level": 2,
+    "expected_flag": false,
+    "expected_behavior": "상담 권고, 채팅 상담 우선 표시, 1~2주 내 예약 유도"
+  },
+  {
+    "id": "S3",
+    "persona": "총점은 중간이지만 9번 문항에 '며칠 동안'이라고 답한 4학년 C",
+    "phq9": [1, 2, 1, 1, 1, 1, 1, 0, 1],
+    "gad7": [1, 1, 1, 1, 0, 1, 1],
+    "preferred_modes": ["대면", "채팅", "화상", "전화"],
+    "expected_level": 3,
+    "expected_flag": true,
+    "expected_behavior": "위기 배너와 109 즉시 노출, 우선 트랙으로 가장 빠른 상담 안내"
+  }
+]
